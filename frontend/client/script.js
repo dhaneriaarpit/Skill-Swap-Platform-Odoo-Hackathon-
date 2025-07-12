@@ -34,17 +34,85 @@ function showUsers() {
     { name: "Charlie", offer: "Guitar", want: "Excel" }
   ];
 
-  let html = '<h2>Browse Users</h2>';
+  let html = `
+    <h2>Browse Users</h2>
+    <input id="search" placeholder="Search by skill" oninput="filterUsers(this.value)">
+    <div id="user-list"></div>
+  `;
+
+  document.getElementById("main-content").innerHTML = html;
+  displayUserCards(users);
+}
+
+function filterUsers(skill) {
+  const all = [
+    { name: "Alice", offer: "Photoshop", want: "Cooking" },
+    { name: "Bob", offer: "Excel", want: "Guitar" },
+    { name: "Charlie", offer: "Guitar", want: "Excel" }
+  ];
+
+  const filtered = all.filter(user =>
+    user.offer.toLowerCase().includes(skill.toLowerCase()) ||
+    user.want.toLowerCase().includes(skill.toLowerCase())
+  );
+
+  displayUserCards(filtered);
+}
+
+function displayUserCards(users) {
+  let list = '';
   users.forEach(user => {
-    html += `
+    list += `
       <div style="border:1px solid #ccc; margin:10px; padding:10px;">
         <strong>${user.name}</strong><br>
         Offers: ${user.offer}<br>
         Wants: ${user.want}<br>
-        <button onclick="alert('Swap request sent to ${user.name}!')">Request Swap</button>
+        <button onclick="sendRequest('${user.name}')">Request Swap</button>
       </div>
     `;
   });
+  document.getElementById("user-list").innerHTML = list;
+}
+
+
+function showMyProfile() {
+  const profile = JSON.parse(localStorage.getItem('myProfile'));
+
+  if (!profile) {
+    alert("No profile found. Please create one.");
+    return showForm();
+  }
+
+  document.getElementById("main-content").innerHTML = `
+    <h2>My Profile</h2>
+    <p><strong>Name:</strong> ${profile.name}</p>
+    <p><strong>Location:</strong> ${profile.location}</p>
+    <p><strong>Skills Offered:</strong> ${profile.offer}</p>
+    <p><strong>Skills Wanted:</strong> ${profile.want}</p>
+    <p><strong>Availability:</strong> ${profile.weekends ? "Weekends" : ""} ${profile.evenings ? "Evenings" : ""}</p>
+    <p><strong>Public Profile:</strong> ${profile.public ? "Yes" : "No"}</p>
+    <button onclick="showForm()">Edit Profile</button>
+  `;
+}
+
+function sendRequest(toUser) {
+  const requests = JSON.parse(localStorage.getItem('swapRequests')) || [];
+  requests.push({ to: toUser, status: "Pending" });
+  localStorage.setItem('swapRequests', JSON.stringify(requests));
+  alert("Request sent to " + toUser);
+}
+
+function showRequests() {
+  const requests = JSON.parse(localStorage.getItem('swapRequests')) || [];
+
+  let html = "<h2>My Swap Requests</h2>";
+  if (requests.length === 0) {
+    html += "<p>No requests yet.</p>";
+  } else {
+    requests.forEach(req => {
+      html += `<p>To: ${req.to} — Status: ${req.status}</p>`;
+    });
+  }
 
   document.getElementById("main-content").innerHTML = html;
 }
